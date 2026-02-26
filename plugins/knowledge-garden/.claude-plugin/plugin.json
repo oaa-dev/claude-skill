@@ -1,0 +1,15 @@
+{
+  "name": "knowledge-garden",
+  "version": "0.1.0",
+  "description": "Project knowledge management for Laravel and Next.js. 2 agents, 9 commands, 6 skills for module indexing, dynamic schemas, knowledge capture, insights, pruning, pre-computed indexing, and knowledge-backed workflows.",
+  "homepage": "https://github.com/betrnk/personal-plugins",
+  "repository": "https://github.com/betrnk/personal-plugins",
+  "license": "MIT",
+  "keywords": [
+    "knowledge-management",
+    "laravel",
+    "nextjs",
+    "documentation",
+    "institutional-knowledge"
+  ]
+}
