@@ -6,9 +6,9 @@ Project knowledge management for Laravel and Next.js. Module indexing, dynamic s
 
 | Type | Count | Description |
 |------|-------|-------------|
-| Agents | 1 | Learnings researcher |
-| Commands | 3 | generate-module-docs, knowledge-insights, knowledge-prune |
-| Skills | 5 | setup, module-docs, knowledge-docs, knowledge-insights, knowledge-prune |
+| Agents | 2 | Learnings researcher, task worker |
+| Commands | 11 | brainstorm, compound, frontend-design, generate-module-docs, knowledge-insights, knowledge-prune, plan, playwright-test, reindex, review, work |
+| Skills | 8 | setup, module-docs, knowledge-docs, knowledge-index, knowledge-insights, knowledge-prune, frontend-design, playwright-test |
 
 ## Quick Start
 
@@ -41,6 +41,10 @@ Analyzes the knowledge base to surface patterns: top problem types, most affecte
 
 Scores documented solutions on staleness (age, severity, framework version, pattern links, module existence) and presents candidates for archiving, deletion, or retention.
 
+### playwright-test
+
+Writes, runs, and analyzes Playwright E2E tests for Laravel + Next.js projects. Detects test scope from arguments or git changes, discovers project conventions from existing tests, presents a test plan for approval, runs tests, diagnoses failures, and optionally captures non-trivial testing insights into the knowledge base.
+
 ## Agents
 
 ### learnings-researcher
@@ -51,9 +55,17 @@ Searches `docs/knowledge/solutions/` for relevant past solutions by frontmatter 
 
 | Command | Description |
 |---------|-------------|
+| `/brainstorm` | Explore requirements and approaches with knowledge-backed context |
+| `/compound` | Document a recently solved problem to compound your knowledge |
+| `/frontend-design` | Research frontend design inspiration and compile mood boards |
 | `/generate-module-docs` | Scan project and generate module documentation |
 | `/knowledge-insights` | Analyze knowledge base and show patterns |
 | `/knowledge-prune` | Flag stale learnings for cleanup |
+| `/plan` | Create implementation plans informed by past learnings |
+| `/playwright-test` | Write, run, and analyze Playwright E2E tests |
+| `/reindex` | Regenerate the knowledge index from all solution files |
+| `/review` | Review code against documented patterns and known issues |
+| `/work` | Execute work with knowledge guardrails and incremental commits |
 
 ## Directory Structure (Generated)
 

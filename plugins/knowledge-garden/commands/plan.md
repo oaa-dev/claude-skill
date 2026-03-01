@@ -21,52 +21,28 @@ Create an implementation plan that leverages institutional knowledge to avoid kn
 
 <instructions>
 
-## Phase 1: Knowledge Auto-Read
+## Phase 1: Knowledge Context
 
-Before planning, surface all relevant institutional knowledge using the pre-computed index.
+Surface relevant institutional knowledge -- but only if there's knowledge to surface.
 
-1. **Check for knowledge index.** Try to read `docs/knowledge/index.md`.
-   - **If not found:** check if `docs/knowledge/solutions/` exists.
-     - If no solutions dir: "Run /knowledge-garden:setup to initialize knowledge-garden first." STOP.
-     - If solutions dir exists but no index: "Run /knowledge-garden::reindex to generate the index." Fall back to legacy grep search (Step 1b).
-   - **If found:** proceed to Step 2.
+1. **Determine input.** If `$ARGUMENTS` points to a file (brainstorm, spec, or doc), read it fully. Otherwise treat `$ARGUMENTS` as the feature description.
 
-   <details><summary>Step 1b: Legacy grep fallback (only if no index)</summary>
+2. **Quick-check the index.** Read the first 10 lines of `docs/knowledge/index.md`.
+   - **If not found:** suggest running `/knowledge-garden::setup`. STOP.
+   - **If both `<!-- Solutions: 0 -->` and `<!-- Modules: 0 -->`:** skip to Phase 2. No knowledge to surface.
+   - **Otherwise:** proceed to step 3.
 
-   Run these Grep calls in parallel:
-   ```
-   Grep: pattern="title:.*[keyword]" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="tags:.*([keyword1]|[keyword2])" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="module:.*[module]" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="symptoms:.*[symptom]" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   ```
-   Read `docs/knowledge/patterns/critical-patterns.md`. Skip to Step 5.
-   </details>
-
-2. **Check if empty.** If the index header contains `<!-- Solutions: 0 -->`, state: "Knowledge base is empty. Skipping knowledge context." Proceed directly to Phase 2.
-
-3. **Determine input.** If `$ARGUMENTS` points to a file (brainstorm, spec, or doc), read it fully. Otherwise treat `$ARGUMENTS` as the feature description.
-
-4. **Scan index in-context.** Extract keywords (module names, technical terms, problem indicators) from the input and scan the Solutions table and Critical Patterns section for matches. No tool calls needed -- the index is already in context.
-
-5. **Deep-read strong matches.** For rows where Module, Type, Tags, or Critical Patterns strongly match (typically 0-3 files), read the full solution file to extract solutions and prevention guidance.
-
-6. **Present knowledge context:**
+3. **Spawn learnings-researcher.** Dispatch the agent with the plan topic:
 
    ```
-   ## Knowledge Context for Planning
-
-   **Relevant learnings:** X documents
-   - [Title]: [key insight] (severity: [level])
-   - ...
-
-   **Known gotchas in affected modules:**
-   - [gotcha from past solution]
-   - ...
-
-   **Critical patterns to follow:**
-   - [pattern from critical-patterns.md]
+   Task(
+     subagent_type: "knowledge-garden:learnings-researcher",
+     description: "Research knowledge for planning",
+     prompt: "Search for institutional learnings relevant to this feature: [input from step 1]"
+   )
    ```
+
+4. **Use response.** Use the returned learnings, gotchas, critical patterns, and module context for Phase 2.
 
 ## Phase 2: Create Plan
 

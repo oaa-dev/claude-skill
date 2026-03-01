@@ -20,49 +20,28 @@ Execute a plan or task systematically with knowledge guardrails that surface rel
 
 <instructions>
 
-## Phase 1: Knowledge Auto-Read
+## Phase 1: Knowledge Context
 
-Before starting work, surface relevant institutional knowledge using the pre-computed index.
+Surface relevant institutional knowledge -- but only if there's knowledge to surface.
 
-1. **Check for knowledge index.** Try to read `docs/knowledge/index.md`.
-   - **If not found:** check if `docs/knowledge/solutions/` exists.
-     - If no solutions dir: "Run /knowledge-garden:setup to initialize knowledge-garden first." STOP.
-     - If solutions dir exists but no index: "Run /knowledge-garden::reindex to generate the index." Fall back to legacy grep search (Step 1b).
-   - **If found:** proceed to Step 2.
+1. **Read the work input.** If `$ARGUMENTS` points to a file (plan, spec, or todo), read it fully. Otherwise treat `$ARGUMENTS` as the task description.
 
-   <details><summary>Step 1b: Legacy grep fallback (only if no index)</summary>
+2. **Quick-check the index.** Read the first 10 lines of `docs/knowledge/index.md`.
+   - **If not found:** suggest running `/knowledge-garden::setup`. STOP.
+   - **If both `<!-- Solutions: 0 -->` and `<!-- Modules: 0 -->`:** skip to Phase 2. No knowledge to surface.
+   - **Otherwise:** proceed to step 3.
 
-   Run these Grep calls in parallel:
-   ```
-   Grep: pattern="title:.*[keyword]" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="tags:.*([keyword1]|[keyword2])" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="module:.*[module]" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   ```
-   Read `docs/knowledge/patterns/critical-patterns.md`. Skip to Step 5.
-   </details>
-
-2. **Check if empty.** If the index header contains `<!-- Solutions: 0 -->`, state: "Knowledge base is empty. Skipping knowledge context." Proceed directly to Phase 2.
-
-3. **Read the work input.** If `$ARGUMENTS` points to a file (plan, spec, or todo), read it fully. Otherwise treat `$ARGUMENTS` as the task description.
-
-4. **Scan index in-context.** Extract keywords from the work input and scan the Solutions table and Critical Patterns section for matches. No tool calls needed -- the index is already in context.
-
-5. **Deep-read strong matches.** For rows where Module, Type, Tags, or Critical Patterns strongly match (typically 0-3 files), read the full solution file for detailed context.
-
-6. **Present knowledge briefing:**
+3. **Spawn learnings-researcher.** Dispatch the agent with the work context:
 
    ```
-   ## Pre-Work Knowledge Briefing
-
-   **Relevant learnings:** X documents
-   - [Title]: [key insight]
-
-   **Watch out for:**
-   - [Known issues in modules being touched]
-
-   **Critical patterns to follow:**
-   - [Applicable patterns]
+   Task(
+     subagent_type: "knowledge-garden:learnings-researcher",
+     description: "Research knowledge for work execution",
+     prompt: "Search for institutional learnings relevant to this work: [input from step 1]. Include module file maps for any modules being touched."
+   )
    ```
+
+4. **Use response.** Use the returned learnings, watch-outs, critical patterns, and module context for Phase 2.
 
 ## Phase 2: Task Breakdown & Dependency Analysis
 
@@ -112,17 +91,18 @@ Before starting work, surface relevant institutional knowledge using the pre-com
 
 ## Phase 3: Execute Tasks
 
+**Before starting any task**, snapshot the current HEAD so Phase 4 can diff against it:
+```bash
+WORK_BASELINE=$(git rev-parse HEAD 2>/dev/null || echo "no-git")
+```
+
 ### Serial Mode
 
 Use when the user chooses serial, or when all tasks are dependent.
 
 For each task in order:
 
-1. **Pre-task knowledge check.** Before starting a task, check if the specific module/component being touched has documented issues:
-   ```
-   Grep: pattern="module:.*[ModuleName]" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   ```
-   If matches found, quickly read frontmatter to surface gotchas relevant to this specific task.
+1. **Apply knowledge context.** Cross-reference this task's module/component against the learnings and module context returned by the agent in Phase 1. Note any relevant gotchas before starting.
 
 2. **Execute the task.** Implement the change following established patterns and knowledge guardrails.
 
@@ -143,10 +123,7 @@ Use when the user chooses parallel and at least one wave has 2+ independent task
 
 For each wave:
 
-1. **Prepare knowledge context.** Before dispatching, gather all relevant knowledge for the wave's tasks in a single pass:
-   - Scan the knowledge index for modules/components touched by any task in this wave
-   - Deep-read matching solutions (typically 0-3 files)
-   - Compile a knowledge briefing to pass to each worker
+1. **Prepare knowledge context.** Use the learnings, module context, and patterns returned by the agent in Phase 1. Filter to the modules/components relevant to this wave's tasks and compile a knowledge briefing to pass to each worker.
 
 2. **Dispatch task-worker agents.** Launch all tasks in the wave simultaneously using `Task(run_in_background: true)` -- all in a single message for true parallelism:
 
@@ -154,7 +131,7 @@ For each wave:
    For each task in the current wave, dispatch a task-worker agent:
 
    Task(
-     subagent_type: "knowledge-garden:learnings-researcher",  -- or "general-purpose"
+     subagent_type: "knowledge-garden:task-worker",
      description: "Execute task: [brief]",
      prompt: """
        ## Task
@@ -173,7 +150,7 @@ For each wave:
    )
    ```
 
-   Use `subagent_type: "general-purpose"` for the task-worker agents. The task-worker agent prompt (from `agents/task-worker.md`) should be included in the dispatch prompt so the agent knows its constraints (no commits, no user questions, stay in file scope).
+   If a `knowledge-garden:task-worker` agent is defined, use it. Otherwise fall back to `general-purpose`. Include task-worker constraints in the prompt (no commits, no user questions, stay in file scope).
 
 3. **Collect results.** Wait for all background agents to complete. Review each agent's structured result (status, files changed, tests, warnings).
 
@@ -203,28 +180,78 @@ For each wave:
 
 6. **Proceed to next wave.** After the user approves the commit, move to the next wave. Tasks in the next wave can now reference outputs from this wave.
 
-## Phase 4: Post-Work Knowledge Capture
+## Phase 4: Auto-Maintain Knowledge Base
 
-After all tasks are complete:
+After all tasks are complete, the AI assesses the work and auto-maintains the knowledge base. Uses `$WORK_BASELINE` captured at the start of Phase 3.
 
-1. **Review what was done.** Summarize the work completed.
+### Step 1: Summarize Work
 
-2. **Prompt for knowledge capture.** Ask the user:
+Summarize the work completed: tasks done, files changed, any knowledge-backed decisions made during execution.
 
-   ```
-   Work complete. Did you encounter any non-trivial problems worth documenting?
+### Step 2: Detect Structural Changes (auto, silent)
 
-   1. Yes - capture learnings now (/compound)
-   2. No - nothing worth documenting
-   3. Later - remind me next session
-   ```
+Compare against the pre-work baseline to find structural changes:
 
-   If the user selects "Yes", suggest running `/compound` to invoke the knowledge-docs skill.
+```bash
+git diff --name-status $WORK_BASELINE HEAD
+```
 
-3. **Report completion.** Summarize:
-   - Tasks completed
-   - Files changed
-   - Any knowledge-backed decisions made during execution
+If not in a git repo or no commits were made, skip to Step 3.
+
+**Trigger module docs regeneration if ANY of these are true:**
+- New files added (`A`) in module directories (models, controllers, services, repositories, pages, components)
+- Files renamed (`R`) or deleted (`D`) in module directories
+- New migration files added
+- New route files added
+
+If triggered, run in background so it doesn't block the user:
+```
+Task(
+  subagent_type: "general-purpose",
+  description: "Regenerate module docs for affected modules",
+  prompt: "Run the knowledge-garden:module-docs skill for these modules only: [affected module names]. Then run the knowledge-garden:knowledge-index skill to rebuild the index.",
+  run_in_background: true
+)
+```
+
+If not triggered: skip silently.
+
+### Step 3: Recommend Knowledge Capture (if warranted)
+
+Review the work execution (the full Phase 3) for signals of non-trivial problem-solving.
+
+**Recommend running `/knowledge-garden::compound` if 2+ of these signals are present:**
+- Errors were encountered and resolved during execution (failed tests, runtime errors, unexpected behavior)
+- Multiple attempts were needed to get something working (debugging loops, reverts, retries)
+- The root cause was different from the initially suspected cause
+- The fix required reading framework source code or documentation to understand internal behavior
+- A non-obvious workaround was needed (not just following established patterns)
+
+**Skip entirely if ALL of these are true:**
+- All tasks completed on first attempt without errors
+- Changes were straightforward (adding new files, simple CRUD, following documented patterns)
+- No debugging or investigation was needed
+
+If signals detected, **recommend** (don't auto-run) with a one-line summary of what would be documented:
+
+```
+Tip: This session hit [brief description of the non-trivial problem].
+Run /knowledge-garden::compound to capture it while the context is fresh.
+```
+
+This keeps the user in control -- they decide whether to spend the time documenting. The AI just makes sure they don't forget.
+
+### Step 4: Report
+
+```
+## Work Complete
+
+**Tasks:** N completed
+**Files changed:** [list]
+**Knowledge maintenance:**
+- Module docs: [updating in background for X, Y | no structural changes]
+- Knowledge capture: [recommended -- see above | not needed]
+```
 
 ## Arguments
 

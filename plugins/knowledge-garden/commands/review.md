@@ -19,41 +19,35 @@ Review code changes against institutional knowledge, documented patterns, and kn
 
 ## Phase 1: Knowledge Auto-Read
 
-Before reviewing, load relevant institutional knowledge using the pre-computed index.
+Before reviewing, load relevant institutional knowledge -- but only if there's knowledge to surface.
 
-1. **Check for knowledge index.** Try to read `docs/knowledge/index.md`.
-   - **If not found:** check if `docs/knowledge/solutions/` exists.
-     - If no solutions dir: "Run /knowledge-garden:setup to initialize knowledge-garden first." STOP.
-     - If solutions dir exists but no index: "Run /knowledge-garden::reindex to generate the index." Fall back to legacy grep search (Step 1b).
-   - **If found:** proceed to Step 2.
-
-   <details><summary>Step 1b: Legacy grep fallback (only if no index)</summary>
-
-   Run these Grep calls in parallel:
-   ```
-   Grep: pattern="module:.*([Module1]|[Module2])" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="component:.*([component1]|[component2])" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="tags:.*([keyword1]|[keyword2])" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   ```
-   Read `docs/knowledge/patterns/critical-patterns.md`. Skip to Step 6.
-   </details>
-
-2. **Check if empty.** If the index header contains `<!-- Solutions: 0 -->`, state: "Knowledge base is empty. Skipping knowledge context." Proceed directly to Phase 2.
-
-3. **Determine review scope.** Based on `$ARGUMENTS`:
+1. **Determine review scope.** Based on `$ARGUMENTS`:
    - If a file path: review that file's recent changes
    - If a branch name: review all changes on that branch vs the default branch
    - If a PR number: use `gh pr diff $ARGUMENTS` to get the diff
    - If empty: review staged/unstaged changes (`git diff` and `git diff --cached`)
 
-4. **Identify affected modules.** From the diff, extract:
+2. **Identify affected modules.** From the diff, extract:
    - Module names (from file paths and namespaces)
    - Component types (models, controllers, services, pages, hooks, etc.)
    - Technical patterns in use (queries, caching, auth, validation, etc.)
 
-5. **Scan index in-context.** Using the identified modules and components, scan the Solutions table and Critical Patterns section for matches. No tool calls needed -- the index is already in context.
+3. **Quick-check the index.** Read the first 10 lines of `docs/knowledge/index.md`.
+   - **If not found:** proceed to Phase 2 without knowledge context.
+   - **If both `<!-- Solutions: 0 -->` and `<!-- Modules: 0 -->`:** proceed to Phase 2 without knowledge context.
+   - **Otherwise:** proceed to step 4.
 
-6. **Deep-read strong matches.** For rows where Module, Component, or Tags strongly match the affected areas (typically 0-3 files), read the full solution file to understand root causes and solutions.
+4. **Spawn learnings-researcher.** Dispatch the agent with the identified modules and components:
+
+   ```
+   Task(
+     subagent_type: "knowledge-garden:learnings-researcher",
+     description: "Research knowledge for code review",
+     prompt: "Search for institutional learnings relevant to these modules and components: [modules and components from step 2]. Include module file maps."
+   )
+   ```
+
+5. **Use response.** Use the returned learnings and module context for Phase 2 cross-referencing.
 
 ## Phase 2: Knowledge-Informed Review
 

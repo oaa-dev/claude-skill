@@ -20,9 +20,10 @@ Execute the full knowledge-index skill workflow:
 1. Verify `docs/knowledge/solutions/` exists. If not: "Run /knowledge-garden:setup to initialize knowledge-garden first."
 2. Glob all solution files in `docs/knowledge/solutions/**/*.md`
 3. Read `docs/knowledge/patterns/critical-patterns.md` and extract pattern names + file references
-4. For each solution file, read the first 20 lines to extract YAML frontmatter (parallel batches of 10)
-5. Write `docs/knowledge/index.md` with the standard index format (header with counts, Critical Patterns section, Solutions table sorted by date descending)
-6. Report: solutions indexed, skipped, critical patterns count
+4. Scan module docs: Glob `docs/knowledge/modules/*.md`. For each, read first 40 lines to extract module name, file count, key components, and relationships. Skip if none found.
+5. For each solution file, read the first 20 lines to extract YAML frontmatter (parallel batches of 10)
+6. Write `docs/knowledge/index.md` with the standard index format (header with counts, Critical Patterns section, Modules table, Solutions table sorted by date descending)
+7. Report: solutions indexed, skipped, critical patterns count, modules indexed
 
 See the knowledge-index skill for the full index file format specification.
 

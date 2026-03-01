@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "knowledge-garden",
-      "description": "Project knowledge management for Laravel and Next.js. Includes 1 agent, 9 commands, and 6 skills.",
+      "description": "Project knowledge management for Laravel and Next.js. Includes 2 agents, 10 commands, and 7 skills.",
       "version": "0.1.0",
       "homepage": "https://github.com/betrnk/personal-plugins",
       "tags": ["knowledge-management", "laravel", "nextjs", "documentation", "institutional-knowledge"],

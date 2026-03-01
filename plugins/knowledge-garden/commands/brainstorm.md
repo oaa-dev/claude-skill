@@ -20,47 +20,26 @@ Explore requirements and approaches for a topic, informed by institutional knowl
 
 <instructions>
 
-## Phase 1: Knowledge Auto-Read
+## Phase 1: Knowledge Context
 
-Before brainstorming, surface relevant institutional knowledge using the pre-computed index.
+Surface relevant institutional knowledge -- but only if there's knowledge to surface.
 
-1. **Check for knowledge index.** Try to read `docs/knowledge/index.md`.
-   - **If not found:** check if `docs/knowledge/solutions/` exists.
-     - If no solutions dir: "Run /knowledge-garden:setup to initialize knowledge-garden first." STOP.
-     - If solutions dir exists but no index: "Run /knowledge-garden::reindex to generate the index." Fall back to legacy grep search (Step 1b).
-   - **If found:** proceed to Step 2.
+1. **Quick-check the index.** Read the first 10 lines of `docs/knowledge/index.md`.
+   - **If not found:** suggest running `/knowledge-garden::setup`. STOP.
+   - **If both `<!-- Solutions: 0 -->` and `<!-- Modules: 0 -->`:** skip to Phase 2. No knowledge to surface.
+   - **Otherwise:** proceed to step 2.
 
-   <details><summary>Step 1b: Legacy grep fallback (only if no index)</summary>
-
-   Run these Grep calls in parallel:
-   ```
-   Grep: pattern="title:.*[keyword]" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="tags:.*([keyword1]|[keyword2])" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   Grep: pattern="module:.*[keyword]" path=docs/knowledge/solutions/ output_mode=files_with_matches -i=true
-   ```
-   Read `docs/knowledge/patterns/critical-patterns.md`. Skip to Step 5.
-   </details>
-
-2. **Check if empty.** If the index header contains `<!-- Solutions: 0 -->`, state: "Knowledge base is empty. Skipping knowledge context." Proceed directly to Phase 2.
-
-3. **Scan index in-context.** Extract keywords from `$ARGUMENTS` and scan the Solutions table and Critical Patterns section for matches. No tool calls needed -- the index is already in context.
-
-4. **Deep-read strong matches.** For rows where Module, Type, Tags, or Critical Patterns strongly match the topic (typically 0-3 files), read the full solution file for detailed context.
-
-5. **Present knowledge context:**
+2. **Spawn learnings-researcher.** Dispatch the agent with the brainstorm topic:
 
    ```
-   ## Knowledge Context
-
-   **Relevant learnings found:** X documents
-   - [Title]: [key insight] (severity)
-   - ...
-
-   **Critical patterns to consider:**
-   - [pattern summary]
+   Task(
+     subagent_type: "knowledge-garden:learnings-researcher",
+     description: "Research knowledge for brainstorm topic",
+     prompt: "Search for institutional learnings relevant to: $ARGUMENTS"
+   )
    ```
 
-   If no relevant learnings found, state: "No existing learnings found for this topic. Fresh territory."
+3. **Use response.** Use the returned learnings, patterns, and module context as the knowledge foundation for Phase 2.
 
 ## Phase 2: Collaborative Brainstorm
 
