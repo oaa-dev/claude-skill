@@ -41,6 +41,22 @@ Surface relevant institutional knowledge -- but only if there's knowledge to sur
 
 3. **Use response.** Use the returned learnings, patterns, and module context as the knowledge foundation for Phase 2.
 
+## Scope Check
+
+After Phase 1, assess whether brainstorming is the right workflow:
+
+- **De-escalate to `/quickfix`** if: the topic is a specific bug or issue with an obvious fix that touches < 3 files and has no real design tradeoffs.
+- **Escalate to `/plan`** if: the approach is already clear, there's no ambiguity in requirements, and the user just needs an implementation plan.
+
+If either applies, suggest the alternative:
+
+```
+This looks like a [quickfix / ready-to-plan task] -- [reason].
+Suggest: /quickfix [topic] or /plan [topic]
+```
+
+Wait for user response before proceeding or switching.
+
 ## Phase 2: Collaborative Brainstorm
 
 With knowledge context established, guide exploration of the topic from `$ARGUMENTS`.
