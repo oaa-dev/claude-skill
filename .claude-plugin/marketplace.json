@@ -9,12 +9,18 @@
   },
   "plugins": [
     {
-      "name": "knowledge-garden",
-      "description": "Project knowledge management for Laravel and Next.js. Includes 2 agents, 10 commands, and 7 skills.",
-      "version": "0.1.0",
-      "homepage": "https://github.com/betrnk/personal-plugins",
-      "tags": ["knowledge-management", "laravel", "nextjs", "documentation", "institutional-knowledge"],
-      "source": "./plugins/knowledge-garden"
+      "name": "kg",
+      "description": "Project knowledge management for Laravel, Next.js, and generic stacks. Includes 2 agents, 7 commands, 8 skills, and 2 coding rulesets.",
+      "version": "0.4.0",
+      "homepage": "https://github.com/oaa-dev/claude-skill",
+      "tags": [
+        "knowledge-management",
+        "laravel",
+        "nextjs",
+        "documentation",
+        "institutional-knowledge"
+      ],
+      "source": "./plugins/kg"
     }
   ]
 }
