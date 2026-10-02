@@ -8,7 +8,7 @@ Project knowledge management for Laravel, Next.js, and generic stacks. Module in
 |------|-------|-------|
 | Agents | 2 | learnings-researcher, task-worker |
 | Commands | 7 | brainstorm, compound, generate-module-docs, plan, reindex, review, work |
-| Skills | 8 | setup, module-docs, knowledge-docs, knowledge-index, knowledge-insights, knowledge-prune, playwright-test, quickfix |
+| Skills | 9 | setup, module-docs, knowledge-docs, knowledge-index, knowledge-insights, knowledge-prune, playwright-test, quickfix, ask |
 | Rulesets | 2 | laravel, nextjs |
 
 Commands and skills never share a name. A skill is invoked the same way a command is —
@@ -95,6 +95,10 @@ Writes, runs, and analyzes Playwright E2E tests. Detects test scope from argumen
 
 Fixes minor issues fast with a mandatory knowledge check but no planning phase. Escalates to `/kg:plan` or `/kg:brainstorm` when the issue turns out to be bigger than a quickfix.
 
+### ask
+
+Answers any question -- project structure, flow, architecture, layers, past issues, or general topics. Project questions are answered knowledge-base-first (index, architecture doc, module docs, solutions), then with targeted code search, citing `path:line` sources. General questions are answered directly with no knowledge lookup. Answers that required code digging can be saved to `docs/knowledge/answers/` and are indexed, so the next lookup is a single read.
+
 ## Agents
 
 ### learnings-researcher
@@ -133,6 +137,7 @@ docs/knowledge/
 │   ├── performance-issues/
 │   ├── runtime-errors/
 │   └── ...
+├── answers/             # Saved /kg:ask answers (optional)
 ├── patterns/
 │   └── critical-patterns.md
 └── archive/             # Archived stale docs (by knowledge-prune)

@@ -345,6 +345,7 @@ mkdir -p docs/knowledge/solutions
 mkdir -p docs/knowledge/modules
 mkdir -p docs/knowledge/patterns
 mkdir -p docs/knowledge/archive
+mkdir -p docs/knowledge/answers
 ```
 
 Create the initial critical patterns file:
@@ -390,6 +391,7 @@ Create `kg.local.md` in the project root:
 - **Modules**: docs/knowledge/modules/
 - **Patterns**: docs/knowledge/patterns/
 - **Archive**: docs/knowledge/archive/
+- **Answers**: docs/knowledge/answers/
 - **Setup date**: [YYYY-MM-DD]
 ```
 
@@ -414,6 +416,7 @@ Directories created:
   - docs/knowledge/modules/
   - docs/knowledge/patterns/
   - docs/knowledge/archive/
+  - docs/knowledge/answers/
 
 Coding rules in effect: [rules/laravel.md / rules/nextjs.md / both / none]
   Agents load these when writing code. Your CLAUDE.md always outranks them.

@@ -20,6 +20,7 @@ The index file contains:
 - A Critical Patterns digest (titles + file refs from critical-patterns.md)
 - A Modules table with file counts, key components, and relationships per module
 - A Solutions table with all frontmatter fields from every solution file
+- An Answers table with saved `/kg:ask` answers
 
 One Read of this file replaces 3-4 Grep calls + N frontmatter reads + a Read of critical-patterns.md + module doc exploration.
 
@@ -81,7 +82,23 @@ Use parallel Read calls in batches of 10 for efficiency.
 
 **If a file has malformed or missing frontmatter**, skip it and count it as skipped.
 
-### Step 6: Generate Index File
+### Step 6: Extract Frontmatter From Saved Answers
+
+```
+Glob: pattern="docs/knowledge/answers/*.md"
+```
+
+If no files found, skip this step. The Answers section will be omitted from the index.
+
+For each answer file, read the first 12 lines to extract YAML frontmatter fields:
+- `question`
+- `modules` (join array as comma-separated string)
+- `tags` (join array as comma-separated string)
+- `date`
+
+Use parallel Read calls in batches of 10 for efficiency. Skip files with malformed frontmatter and count them as skipped.
+
+### Step 7: Generate Index File
 
 Write `docs/knowledge/index.md` with this exact structure:
 
@@ -92,6 +109,7 @@ Write `docs/knowledge/index.md` with this exact structure:
 <!-- Solutions: N -->
 <!-- Skipped: M (malformed frontmatter) -->
 <!-- Modules: P -->
+<!-- Answers: Q -->
 
 ## Critical Patterns
 - [Pattern Name] -> [category/filename.md]
@@ -108,6 +126,12 @@ Write `docs/knowledge/index.md` with this exact structure:
 |------|--------|------|-----------|----------|------|------|
 | category/filename.md | ModuleName | problem_type | component | severity | YYYY-MM-DD | tag1, tag2 |
 | ... | ... | ... | ... | ... | ... | ... |
+
+## Answers
+| File | Question | Modules | Tags | Date |
+|------|----------|---------|------|------|
+| how-does-checkout-work.md | How does the order checkout flow work? | Order, Payment | checkout, flow | YYYY-MM-DD |
+| ... | ... | ... | ... | ... |
 ```
 
 **File column:** Use the path relative to `docs/knowledge/solutions/` (e.g., `performance-issues/n-plus-one-user-queries-20260210.md`).
@@ -116,7 +140,9 @@ Write `docs/knowledge/index.md` with this exact structure:
 
 **Modules section:** Only include if module docs were found in Step 4. If no module docs exist, use `<!-- Modules: 0 -->` and omit the table.
 
-**Empty knowledge base:** If no solution files found, write:
+**Answers section:** Only include if answer files were found in Step 6. File column is relative to `docs/knowledge/answers/`. Sort by date descending. If none exist, use `<!-- Answers: 0 -->` and omit the table.
+
+**Empty knowledge base:** If no solution files found (but modules or answers exist), still include those sections. If nothing exists at all, write:
 
 ```markdown
 # Knowledge Index
@@ -124,6 +150,7 @@ Write `docs/knowledge/index.md` with this exact structure:
 <!-- Updated: YYYY-MM-DD -->
 <!-- Solutions: 0 -->
 <!-- Modules: 0 -->
+<!-- Answers: 0 -->
 
 ## Critical Patterns
 
@@ -132,7 +159,7 @@ Write `docs/knowledge/index.md` with this exact structure:
 |------|--------|------|-----------|----------|------|------|
 ```
 
-### Step 7: Report
+### Step 8: Report
 
 ```
 Knowledge index updated.
@@ -141,6 +168,7 @@ Knowledge index updated.
 - Skipped (malformed): M
 - Critical patterns: P
 - Modules indexed: Q
+- Answers indexed: R
 - Written to: docs/knowledge/index.md
 ```
 

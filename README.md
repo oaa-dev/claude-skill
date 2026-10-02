@@ -6,7 +6,7 @@ A personal Claude Code plugin marketplace.
 
 | Plugin | Description | Install |
 |--------|-------------|---------|
-| kg (Knowledge Garden) | Project knowledge management for Laravel, Next.js, and generic stacks. 2 agents, 7 commands, 8 skills, 2 coding rulesets. | `/plugin install kg` |
+| kg (Knowledge Garden) | Project knowledge management for Laravel, Next.js, and generic stacks. 2 agents, 7 commands, 9 skills, 2 coding rulesets. | `/plugin install kg` |
 
 ## Claude Code Install
 

@@ -36,6 +36,7 @@ Scan the index in-context (no tool calls):
 - Check **Critical Patterns** for relevant patterns
 - Check **Modules table** for matching module names
 - Check **Solutions table** for rows where Module, Type, Component, or Tags match keywords
+- Check **Answers table** (if present) for rows where Question, Modules, or Tags match keywords -- these are saved `/kg:ask` answers about how the system works
 - Note matching rows as candidates
 
 **If `<!-- Solutions: 0 -->`:** check if a `## Modules` section has rows. If yes, skip to Step 3 for module docs only. If no modules either, report "Knowledge base is empty." and return.
@@ -54,7 +55,7 @@ Skip if no module names match or no Modules section exists.
 
 ### Step 4: Deep-Read Candidates
 
-For strong matches from the index (module matches, tag matches, symptom matches, component matches -- typically 0-3 files), read the full solution file. Extract: problem description, solution, prevention guidance, key insight.
+For strong matches from the index (module matches, tag matches, symptom matches, component matches -- typically 0-3 files), read the full solution file (`docs/knowledge/solutions/...`) or saved answer (`docs/knowledge/answers/...`). Extract: problem description, solution, prevention guidance, key insight.
 
 Skip files with only weak overlap (no matching tags, modules, or symptoms).
 

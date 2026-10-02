@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.0] - 2026-10-02
+
+### Added
+
+- **`ask` skill (`/kg:ask`)** — answers questions about project structure, flow, architecture,
+  layers, and past issues (knowledge base first, then targeted code search with `path:line`
+  sources), or general questions directly with no knowledge lookup.
+- Saved answers in `docs/knowledge/answers/`, indexed in a new Answers table in
+  `docs/knowledge/index.md`, created by `setup`, and surfaced by `learnings-researcher`.
+
 ## [0.4.0] - 2026-08-10
 
 ### Added
